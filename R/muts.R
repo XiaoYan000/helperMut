@@ -86,7 +86,7 @@ extend <- function(x, upstream, downstream) {
 get_MS_VR <- function(x,
                       sep=">",
                       k = 1,
-                      genome = genome_selector(),
+                      genome,
                       simplify_set = c("C","A"),
                       keep_strand = FALSE){
 
