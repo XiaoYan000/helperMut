@@ -4,7 +4,7 @@
 \alias{generate_mut_types}
 \title{Generate Mutation Subtypes}
 \usage{
-generate_mut_types(k, sep = ">", simplify_set = c("C", "A"))
+generate_mut_types(k, sep = ">", simplify_set = c("C", "T"))
 }
 \arguments{
 \item{k}{The number of upstream and downstream bases the motif is generated}

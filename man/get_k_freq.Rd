@@ -5,9 +5,9 @@
 \alias{get_k_freq_fromRegion}
 \title{Get k-mer frequency in mutation-neighbouring regions}
 \usage{
-get_k_freq(vr, k, wl, genome = genome_selector(), ...)
+get_k_freq(vr, k, wl, genome, ...)
 
-get_k_freq_fromRegion(k, gr, genome = genome_selector(), ...)
+get_k_freq_fromRegion(k, gr, ...)
 }
 \arguments{
 \item{vr}{a VRanges object with SNVs}
@@ -31,9 +31,9 @@ frequencies at a given window length.
 }
 \section{Functions}{
 \itemize{
-\item \code{get_k_freq_fromRegion}: Get k-mer frequency in regions
-}}
+\item \code{get_k_freq_fromRegion()}: Get k-mer frequency in regions
 
+}}
 \examples{
 get_k_freq(vr_example,
           k = 1,

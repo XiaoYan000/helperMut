@@ -3,7 +3,7 @@ Type: Package
 Title: Helper Functions for Mutation Analysis
 Version: 0.1.0
 Author: David Mas-Ponte
-Maintainer: David Mas-Ponte <david.mas@irbbarcelona.org>
+Maintainer: David Mas-Ponte <david@masponte.com>
 Description: An ensembl of functionalities and helper
     functions to work with mutational and genomic data in R. It builds up
     on pre-existing tools from bioc to set up a framework for analysis.
@@ -15,32 +15,27 @@ Suggests:
     BSgenome.Hsapiens.UCSC.hg19,
     BSgenome.Hsapiens.UCSC.hg38,
     BSgenome.Hsapiens.1000genomes.hs37d5,
+    BSgenome.Dmelanogaster.UCSC.dm3,
     org.Hs.eg.db,
-    TxDb.Hsapiens.UCSC.hg19.knownGene,
+    SomaticSignatures,
     covr
 Imports: 
     BiocGenerics,
-    BSgenome,
     dplyr,
     GenomeInfoDb,
     GenomicRanges,
-    glue,
     IRanges,
     purrr,
-    utils,
     Biostrings,
+    glue,
     stringr,
+    VariantAnnotation (>= 1.27.2),
     broom,
-    magrittr,
-    plyr,
     tidyr,
     tidyselect,
-    VariantAnnotation (>= 1.27.2),
-    testthat,
     readr,
-    GenomicFeatures,
     AnnotationDbi,
-    SomaticSignatures,
-    S4Vectors,
-    BiocManager
-RoxygenNote: 7.0.0
+    BSgenome,
+    testthat,
+    magrittr
+RoxygenNote: 7.3.2

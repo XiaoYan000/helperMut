@@ -4,7 +4,9 @@
 \name{dna_codes}
 \alias{dna_codes}
 \title{IUPAC DNA codes}
-\format{A list with all IUPAC DNA codes and its meanings}
+\format{
+A list with all IUPAC DNA codes and its meanings
+}
 \source{
 \url{https://www.bioinformatics.org/sms/iupac.html}
 }

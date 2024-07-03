@@ -4,7 +4,7 @@
 \alias{extend}
 \title{GRanges extension}
 \usage{
-extend(x, upstream, downstream)
+extend(x, upstream, downstream, verbose = FALSE)
 }
 \arguments{
 \item{x}{A GRanges or VRanges object}

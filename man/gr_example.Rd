@@ -4,7 +4,9 @@
 \name{gr_example}
 \alias{gr_example}
 \title{A small GR object to use in examples.}
-\format{GRanges object}
+\format{
+GRanges object
+}
 \usage{
 gr_example
 }

@@ -7,7 +7,7 @@
 indels_classifier(
   vr,
   maxRep = 5,
-  genome = genome_selector(),
+  genome,
   check_format = TRUE,
   groupVar = "group"
 )

@@ -4,7 +4,9 @@
 \name{order_ms96_cosmicSignatures}
 \alias{order_ms96_cosmicSignatures}
 \title{Ordered mutation types based on Cosmic signatures website}
-\format{A vector with 96 mutation types}
+\format{
+A vector with 96 mutation types
+}
 \source{
 \url{https://cancer.sanger.ac.uk/signatures_v2/Signature-2.png}
 }

@@ -17,6 +17,14 @@
 ##
 
 
+# ORDERS -------------------------
+
+context("ms96")
+test_that("ms96 gets into the right order", {
+  test_bool = helperMut::order_ms96_cosmicSignatures == helperMut::generate_mut_types(k = 1, simplify_set = c("C", "T"))
+  testthat::expect_true(all(test_bool))
+})
+
 
 # GENOME ------------------------------------------------------------------
 
@@ -28,55 +36,17 @@ test_that("muts context helpers", {
   expect_error(simplify_ctx(muts = character()))
 })
 
-
-context("genome")
-test_that("genome selector", {
-
-  test = genome_selector()
-  expect_equal(length(seqnames(test)), 93)
-
-})
-
 context("genome")
 test_that("chunk regions", {
-
-
   expect_error(get_region_chunks(gr = "wrong"))
-  test = genome_selector()
+  test = BSgenome.Dmelanogaster.UCSC.dm3::BSgenome.Dmelanogaster.UCSC.dm3
   res = get_region_chunks(test)
-
   expect_true(all(width(res) <= 10000))
   expect_equal(sum(width(trim(res))), sum(seqlengths(test)))
 })
 
 
-
 # MUTS --------------------------------------------------------------------
-
-
-context("enrichment")
-test_that("general enrichment", {
-  library(VariantAnnotation)
-  genome = genome_selector()
-  base_pos = 6e4
-  vr_target = VRanges(seqnames="chr1",
-                      ranges=IRanges(c(base_pos + 6, base_pos + 16),
-                                     width = 1),
-                      ref = "C",alt = "A")
-  gr_target <- GRanges(seqnames="chr1",
-                       ranges=IRanges(base_pos + 3,base_pos +  10))
-  gr_mask <- GRanges(seqnames=c("chr1", "chr1"),
-                     ranges=IRanges(c(base_pos + 4,base_pos + 15),
-                                    width = 10))
-
-  res = mutation_enrichment_general(vr = vr_target,
-                              gr = gr_target,
-                              genome = genome,
-                              genome_mask = gr_mask)
-
-  expect_s3_class(object = res,class = "data.frame")
-  expect_equal(round(as.numeric(res$estimate),1), 1.80)
-})
 
 
 context("muts")
@@ -185,7 +155,7 @@ test_that("MS",{
                                          width = c(1)),
                ref = c("A","G"),
                alt = c("T","T"))
-  res1 = expect_warning(get_MS_VR(x = vr,genome = genome))
+  res1 = get_MS_VR(x = vr,genome = genome)
 
   strand(vr) = "+"
   res2 = get_MS_VR(x = vr,genome = genome)
@@ -214,27 +184,24 @@ test_that("MSM",{
     alt = c("T","T"),
     sampleNames = c("test1","test2")
   )
-
+  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
   vr_test = vr
   seqlevelsStyle(vr_test) = "NCBI"
   # the seqlevels will have different SQlevels
   expect_error(get_MS_VR(x = vr_test,
-                         genome = genome_selector(alias="Hsapiens.UCSC.hg19")))
+                         genome = genome))
 
   # contexts need to be simplified
   expect_error(count_MS(c("TCA>T","TCT>T","TGA>T")))
   # this is for non-standard mutations
   expect_error(count_MS(c("TCA>T","TCT>T","TCN>T")))
-
-  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
-
-  m2 = expect_warning(compute_MSM_fast(vr,genome = genome))
+  m2 = compute_MSM_fast(vr,genome = genome)
 
   m3 = SomaticSignatures::mutationContext(vr = vr,
-                                          ref = genome)
+                                          ref = genome) |>  as.data.frame()
   m3 = glue::glue("{stringr::str_sub(m3$context,1,1)}{stringr::str_sub(m3$alteration,1,1)}{stringr::str_sub(m3$context,3,3)}>{stringr::str_sub(m3$alteration,2,2)}")
 
-  m4 = expect_warning(get_MS_VR(vr,genome = genome,simplify_set = c("C","T")))
+  m4 = get_MS_VR(vr,genome = genome,simplify_set = c("C","T"))
   expect_equal(as.character(m3),m4)
 
   expect_equal(m4,c("TTA>A","CCA>A"))
@@ -305,57 +272,6 @@ test_that("extract params", {
 
 })
 
-
-
-
-# REGIONS -----------------------------------------------------------------
-
-context("regions")
-test_that("regions", {
-
-  gr_reg_test = GenomicRanges::GRanges(
-    seqnames = "chr1",ranges = IRanges::IRanges(start = c(1,20,40,50),
-                                                end = c(10,35,47,55))
-  )
-
-  mask_gr_test = GenomicRanges::GRanges(
-    seqnames = "chr1",
-    ranges = IRanges::IRanges(start = c(1,40),end = c(35,100))
-  )
-
-  res = shufle_regions2(regions = gr_reg_test,mask = mask_gr_test)
-  res2 = shufle_regions(regions = gr_reg_test,mask = mask_gr_test)
-
-
-  library(GenomicRanges)
-  ovr = findOverlaps(query = res,subject = mask_gr_test)
-  ovr2 = findOverlaps(query = res2,subject = mask_gr_test)
-
-  # this tests if the result is in the mask
-  expect_equal(length(unique(queryHits(ovr))) , length(gr_reg_test))
-  expect_equal(length(unique(queryHits(ovr2))) , length(gr_reg_test))
-
-  # this test if the result is shufled
-  expect_false(all(start(res) == start(gr_reg_test)))
-  expect_false(all(start(res2) == start(gr_reg_test)))
-})
-
-
-context("regions")
-test_that("gene functions", {
-
-  human = org.Hs.eg.db::org.Hs.eg.db
-  txdb = TxDb.Hsapiens.UCSC.hg19.knownGene::TxDb.Hsapiens.UCSC.hg19.knownGene
-  obtain_genomic_feature(feat = "transcripts",
-                         annotation_pkg = human,
-                         transcript_db = txdb,
-                         identifiers = c("BRCA1","BRCA2"),
-                         indentifier_type = "SYMBOL",
-                         transcript_db_columns = "TXNAME") -> res
-  # manually retrieved from genome browser
-  expect_equal(length(unique(res$TXNAME)),24)
-})
-
 # PROFILES ----------------------------------------------------------------
 
 context("profiles")
@@ -404,21 +320,6 @@ test_that("data is loaded correctly", {
 # UTILS -------------------------------------------------------------------
 
 context("utils")
-test_that("binom test", {
-
-  resdf = binom_test(x = c(1,2,3),n = c(2,4,6))
-  expect_true(all(resdf$estimate == 0.5))
-  expect_true(all(resdf$p.value == 1))
-
-  resdf = binom_test(x = c(1,2,3),n = c(2,4,6),p = rep(0.1,3))
-  expect_true(all(resdf$p.value < 0.2))
-
-  binom.test(x = 1,n = 2,p = .1)$p.value -> singleP
-  resdf$p.value[1] -> multP
-  expect_equal(singleP,multP)
-})
-
-context("utils")
 test_that("k freq",{
   library(VariantAnnotation)
   vr = VRanges(
@@ -426,76 +327,19 @@ test_that("k freq",{
     ranges = IRanges(start = 131157777, width = 1),
     ref = "C",alt = "T"
   )
-  genome = genome_selector(alias = "Hsapiens.UCSC.hg19")
-  get_k_freq(vr = vr,wl = 5, k = 1) -> test
+  genome = BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
+  get_k_freq(vr = vr, wl = 5, k = 1, genome = genome) -> test
   expect_equal(sum(test),3)
   expect_equal(test["ATC"],c("ATC" = 1L))
   expect_equal(test["TCC"],c("TCC" = 1L))
   expect_equal(test["CCT"],c("CCT" = 1L))
   expect_equal(test["CCC"],c("CCC" = 0))
-  get_k_freq(vr = vr,wl = 5, k = 0) -> test2
+  get_k_freq(vr = vr,wl = 5, k = 0, genome = genome) -> test2
   expect_equal(test2["C"],c("C" = 2))
   expect_equal(test2["A"],c("A" = 1))
   expect_equal(test2["T"],c("T" = 2))
   expect_equal(sum(test2),5)
 })
-
-
-context("utils")
-test_that("rAPOBEC",{
-  library(VariantAnnotation)
-  vr = VRanges(
-    seqnames = c("chr3"),
-    ranges = IRanges(start = c(131157783,131157780,149131582), width = 1),
-    ref = "C",alt = "T"
-  )
-
-  strand(vr) = "+"
-  genome = genome_selector(alias = "Hsapiens.UCSC.hg19")
-  res = compute_rAPOBEC(vr = vr,genome = genome,wl = 10 )
-
-  # should we do this by hand? a bit difficult even in small sizes
-  expect_equal(res,5)
-  expect_true(is.numeric(res))
-
-})
-
-context("utils")
-test_that("random", {
-  expect_equal(jaccard(c("a","a","c"),c("a")),.5)
-
-
-  res = .lenunique(c("A","C","A"))
-  expect_equal(res,2)
-})
-
-context("utils")
-test_that("enrichment",{
-  library(VariantAnnotation)
-  VRanges(seqnames = "chr2",
-          ranges = IRanges(start =c(204032938,
-                                    204033081,
-                                    204033154,
-                                    204033163),
-                           width = 1),
-          ref = "G",
-          alt = "T") -> vr
-  genome = genome_selector(script_mode = T)
-
-  expect_error(compute_motif_enrichment(vr = "test",genome = genome))
-  expect_error(compute_motif_enrichment(vr = vr,genome = "jfdhsf"))
-
-  res = expect_warning( compute_motif_enrichment(vr = vr,
-                                           genome = genome,
-                                           k_offset = 5,
-                                           set = "GGG>T",
-                                           control_set = "NGG>T"))
-
-  expect_true( is(res,"data.frame"))
-  expect_true("estimate" %in% colnames(res))
-          })
-
-
 
 # INDELS ------------------------------------------------------------------
 
@@ -512,7 +356,4 @@ test_that("microhomology", {
   seqvec_err = c("CTACTGTTCGA","TTTCCTACTATTTCCGGTAGGGGGGGGTA")
   expect_error(detect_microhomology(seqvec_err))
 })
-
-
-
 

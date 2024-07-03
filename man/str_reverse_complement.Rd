@@ -25,9 +25,9 @@ Internally it transforms the string to DNAstringSet from Biostrings.
 }
 \section{Functions}{
 \itemize{
-\item \code{ms_reverse_complement}: Rc of a mutation string
-}}
+\item \code{ms_reverse_complement()}: Rc of a mutation string
 
+}}
 \examples{
 
 str_reverse_complement(c("CCC","TTT"))

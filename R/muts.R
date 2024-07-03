@@ -8,7 +8,6 @@
 # \__|     \__| \______/    \__|    \______/
 
 
-
 #' GRanges extension
 #'
 #' @description
@@ -31,7 +30,7 @@
 #' @export
 #'
 #' @examples
-extend <- function(x, upstream, downstream) {
+extend <- function(x, upstream, downstream, verbose = FALSE) {
 
   # I have to do this because they don't let me use the strand in a VRanges
   # object, therefore we need to translate to GR before extending
@@ -40,7 +39,7 @@ extend <- function(x, upstream, downstream) {
     x = as(object = x,Class = "GRanges")
   }
 
-  if (any(BiocGenerics::strand(x) == "*")){
+  if (verbose & any(BiocGenerics::strand(x) == "*")){
     warning("'*' ranges were treated as '+'")
   }
 
@@ -462,99 +461,6 @@ make_set <- function(x,
 }
 
 
-
-#' Compute test for mutation enrichment in a region
-#'
-#' This functions computes a fisher test to check for an enrichment
-#' or depletion based on the size of the region tested and the genome
-#' or genomic mask.
-#'
-#' It does not control for sequence composition, just for size.
-#'
-#' Warning: target regions will be intercepted with mask if not NULL
-#'
-#' @param vr a VRanges object with mutations
-#' @param gr a target region to test for enrichment, a GRanges object
-#' @param genome a BSgenome object
-#' @param genome_mask a regions mask that contains the target regions to test.
-#' @param ... arguments for the fisher test
-#'
-#' @return
-#' a tidy dataframe from broom::tidy.
-#' @export
-#'
-#' @examples
-#'
-#' library(VariantAnnotation)
-#' genome = genome_selector("Hsapiens.UCSC.hg19")
-#' base_pos = 6e4
-#' vr_target = VRanges(seqnames="chr1",
-#'                     ranges=IRanges(c(base_pos + 6, base_pos + 16),
-#'                                    width = 1),
-#'                     ref = "C",alt = "A")
-#' gr_target <- GRanges(seqnames="chr1",
-#'                      ranges=IRanges(base_pos + 3,base_pos +  10))
-#' gr_mask <- GRanges(seqnames=c("chr1", "chr1"),
-#'                    ranges=IRanges(c(base_pos + 4,base_pos + 15),
-#'                                   width = 10))
-#'
-#' mutation_enrichment_general(vr = vr_target,
-#'                             gr = gr_target,
-#'                             genome = genome,
-#'                             genome_mask = gr_mask)
-mutation_enrichment_general <- function(vr,
-                                         gr,
-                                         genome = genome_selector(),
-                                         genome_mask = NULL,
-                                        ...) {
-
-  if (is.null(genome_mask)){
-    gr_target = gr
-  } else {
-    # [^mdfkjs]
-    gr_target = GenomicRanges::intersect(gr,genome_mask)
-  }
-
-  ovr = GenomicRanges::findOverlaps(query = vr,subject = gr_target)
-  ctx_cont = get_k_freq_fromRegion(gr = gr_target, k = 0, genome = genome)
-
-  if (is.null(genome_mask)){
-    GenomeInfoDb::seqlevels(gr) = GenomeInfoDb::seqlevels(genome)
-    GenomeInfoDb::seqlengths(gr) = GenomeInfoDb::seqlengths(genome)
-    GenomeInfoDb::genome(gr) = GenomeInfoDb::genome(genome)
-    gr_gaps = gaps(gr)
-    gr_gaps = gr_gaps[strand(gr_gaps) == "*"]
-  } else {
-    # in this scenario gr_target should be always included in genome_mask
-    # see [^mdfkjs]
-    gr_gaps = GenomicRanges::setdiff(x = genome_mask,y = gr_target)
-  }
-
-  ctx_cont_gaps = get_k_freq_fromRegion(gr = gr_gaps,
-                                        k = 0,
-                                        genome = genome)
-
-  ovr_out = GenomicRanges::findOverlaps(query = vr,subject = gr_gaps)
-
-  muts_in = length(ovr)
-  muts_out = length(ovr_out)
-  ctx_in = sum(ctx_cont)
-  ctx_out = sum(ctx_cont_gaps)
-
-  cnt_table = matrix(c(muts_in,
-                       ctx_in,
-                       muts_out,
-                       ctx_out),
-                     byrow = TRUE,
-                     nrow = 2,
-                     dimnames = list(Mutation = c("Mut","wt"),
-                                     Region = c("in","out")))
-
-  res_df = broom::tidy(fisher.test(cnt_table,...))
-
-  res_df
-}
-
 #' Compute mutational subtype matrix
 #'
 #' @description
@@ -577,7 +483,7 @@ mutation_enrichment_general <- function(vr,
 compute_MSM_fast = function(vr,
                             k=1,
                             sep = ">",
-                            genome = genome_selector(),
+                            genome,
                             simplify_set = c("C","A")) {
 
   # based on the implementation of somaticSignatures::motifMatrix
@@ -691,7 +597,7 @@ identify_mut_aestetics = function(ms, force = FALSE){
 #'
 generate_mut_types <- function(k,
                                sep=">",
-                               simplify_set = c("C","A")){
+                               simplify_set = c("C","T")){
 
 
   panels = purrr::map(simplify_set,function(bp){

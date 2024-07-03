@@ -17,5 +17,5 @@ get_region_chunks(gr, wl = 10000, unlist = TRUE)
 A GRanges object chunked
 }
 \description{
-From a genome file or a GR object generate a chunked verision
+From a genome file or a GR object generate a chunked version
 }

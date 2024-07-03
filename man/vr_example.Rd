@@ -4,7 +4,9 @@
 \name{vr_example}
 \alias{vr_example}
 \title{A small VR object to use in examples.}
-\format{VRanges object}
+\format{
+VRanges object
+}
 \usage{
 vr_example
 }

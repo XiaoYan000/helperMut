@@ -8,7 +8,7 @@ get_MS_VR(
   x,
   sep = ">",
   k = 1,
-  genome = genome_selector(),
+  genome,
   simplify_set = c("C", "A"),
   keep_strand = FALSE
 )

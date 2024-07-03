@@ -8,141 +8,10 @@
 #  \______/ \________|\__|  \__| \______/ \__|     \__|\________|
 
 
-# You can use BSgenome::available.genomes(TRUE)
-
-#' Genome Selector
-#'
-#' @description
-#' Wrapper function for a BSgenome usage. It can handle interactive downloads,
-#' listing of available and installed reference sequences.
-#'
-#' Main function is to retrieve a genome object without loading the
-#' whole package, can be done through aliases or interactive selection.
-#'
-#' @param alias string containing the alias of the genome (ex: Hsapiens.NCBI.GRCh38)
-#' @param install boolean if genome has to be installed in the system if required.
-#' @param available List available genomes in bioConductor
-#' @param script_mode Don't toggle the interactive mode.
-#' @param installed List installed genomes in the local machine
-#'
-#' @return A BSgenome object.
-#'
-#' @export
-#'
-#' @examples
-#'
-#' \dontrun{
-#' # list installed genomes in the system
-#' # choose one to save it as an object
-#' genome = genome_selector(installed = T)
-#'
-#' # how to install a genome package
-#' # then press the desired genome package and press 1 to install.
-#' # after that it will be saved as an object
-#' genome = genome_selector(available = T)
-#'
-#'
-#' # select the desired genome package
-#' genome = genome_selector(alias = "Hsapiens.1000genomes.hs37d5")
-#' }
-#'
-genome_selector <- function(alias="Hsapiens.UCSC.hg19",
-                            install = FALSE,
-                            available=FALSE,
-                            script_mode=FALSE,
-                            installed = FALSE){
-
-  stopifnot(requireNamespace("glue",quietly = TRUE))
-  stopifnot(requireNamespace("BSgenome",quietly = TRUE))
-
-  interactive_mode = interactive() & !script_mode
-
-  all_genomes = c(BSgenome::available.genomes(),BSgenome::installed.genomes())
-
-  if (install){
-    installed = FALSE
-    available = FALSE
-  }
-
-  if(installed & interactive_mode){
-    ch_g = BSgenome::installed.genomes()
-
-    if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) {
-      # RStudio specific code
-      choice_g = utils::menu(choices = ch_g,
-                             graphics = FALSE,
-                             title = "Choose one of the available genomes.")
-      if(choice_g == 0)return(NULL)
-    } else {
-      choice_g = utils::menu(choices = ch_g,
-                             graphics = TRUE,
-                             title = "Choose one of the available genomes.")
-      if(choice_g == 0)return(NULL)
-    }
-
-    query = ch_g[choice_g]
-
-  } else if (available & interactive_mode){
-
-    ch_g = BSgenome::available.genomes()
-
-    if (!is.na(Sys.getenv("RSTUDIO", unset = NA))) {
-      # RStudio specific code
-      choice_g = utils::menu(choices = ch_g,
-                             graphics = FALSE,
-                             title = "Choose one of the available genomes.")
-      if(choice_g == 0)return(NULL)
-    } else {
-      choice_g = utils::menu(choices = ch_g,
-                             graphics = TRUE,
-                             title = "Choose one of the available genomes.")
-      if(choice_g == 0)return(NULL)
-    }
-    query = ch_g[choice_g]
-  } else if (available | installed){
-    stop("No interactive session. Use install=TRUE to automatically install the needed package.")
-  } else {
-    query = glue::glue("BSgenome.{alias}")
-    stopifnot(query %in% all_genomes)
-  }
-
-  # sanity check
-  stopifnot(query %in% all_genomes)
-
-  if (query %in% BSgenome::installed.genomes()){
-    genome = BSgenome::getBSgenome(query)
-  } else {
-    message(glue::glue("{query} not installed."))
-
-    # enter the choice if to install
-    if (interactive_mode & !install){
-      choice = utils::menu(c("Yes", "No"),
-                           title="Do you want to install the package now?")
-    } else if (install){
-      choice = 1
-    } else {
-      choice = 0
-    }
-
-    if (choice == 1){
-      BiocManager::install(query)
-      genome = BSgenome::getBSgenome(query)
-    } else {
-      stop("Use install=TRUE to automatically install the needed package.")
-    }
-  }
-
-  return(genome)
-}
-
-
-
-
-
 
 #' Get chunks from regions
 #'
-#' From a genome file or a GR object generate a chunked verision
+#' From a genome file or a GR object generate a chunked version
 #'
 #' @param gr a GRanges object or a BSgenome object
 #' @param wl the window length of the resulting chunks
@@ -183,8 +52,6 @@ get_region_chunks <- function(gr,wl = 10000,unlist = TRUE) {
     end,
     start
   )
-
-  #browser()
 
   purrr::pmap(.l = lol,.f = function(name,end,start){
     GenomicRanges::GRanges(

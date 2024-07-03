@@ -27,9 +27,9 @@ It also translate a mutation set to an alternative refernce set (for instance, C
 }
 \section{Functions}{
 \itemize{
-\item \code{simplify_ctx}: Simplify contexts
-}}
+\item \code{simplify_ctx()}: Simplify contexts
 
+}}
 \examples{
 
 mutset = c("ACT>T","TTA>C")

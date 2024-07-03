@@ -4,13 +4,7 @@
 \alias{compute_MSM_fast}
 \title{Compute mutational subtype matrix}
 \usage{
-compute_MSM_fast(
-  vr,
-  k = 1,
-  sep = ">",
-  genome = genome_selector(),
-  simplify_set = c("C", "A")
-)
+compute_MSM_fast(vr, k = 1, sep = ">", genome, simplify_set = c("C", "A"))
 }
 \arguments{
 \item{vr}{A VRanges object with SNV calls.}

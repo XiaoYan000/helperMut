@@ -4,7 +4,7 @@
 \alias{del_microhomology_VR}
 \title{Get microhomology of deletions}
 \usage{
-del_microhomology_VR(vr, genome = genome_selector())
+del_microhomology_VR(vr, verbose = FALSE)
 }
 \arguments{
 \item{vr}{a VRanges object with deletions}

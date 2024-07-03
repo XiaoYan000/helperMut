@@ -21,15 +21,16 @@
 #' @export
 #'
 #' @examples
-del_microhomology_VR <- function(vr,genome = genome_selector()){
+del_microhomology_VR <- function(vr, verbose = FALSE){
   # TODO, add a insertion check. This is more problematic than u may think.
 
   # this extends the sequence to the right and the left by the same
   # amount of length. This generates 3 segments with equal length,
   # which is the same as the original one.
   vr_ext = extend(vr,
-                                     upstream = width(vr),
-                                     downstream = width(vr))
+                  upstream = width(vr),
+                  downstream = width(vr),
+                  verbose = verbose)
 
   # we obtain the sequence for the segments.
   vr_seq = Biostrings::getSeq(genome,
@@ -174,7 +175,7 @@ compute_mh_length <- function(vec1,vec2,direction ="+"){
 #' @examples
 indels_classifier <- function(vr,
                              maxRep = 5,
-                             genome = genome_selector(),
+                             genome,
                              check_format = TRUE,
                              groupVar = "group"){
 
