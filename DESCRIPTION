@@ -1,7 +1,7 @@
 Package: helperMut
 Type: Package
 Title: Helper Functions for Mutation Analysis
-Version: 0.1.1.XYrevised
+Version: 0.1.1-1
 Author: David Mas-Ponte
 Maintainer: David Mas-Ponte <david@masponte.com>
 Description: An ensembl of functionalities and helper
