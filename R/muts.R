@@ -326,18 +326,23 @@ simplify_ctx <- function(ctx,simplify_set = c("C","A")) {
     stop("CTX is empty")
   }
 
-  ###### DANGER!! ###########
-  k = unique((nchar(ctx) - 1)/2)
+  ###### DANGER!! ###########  
+  if (is(ctx, "DNAStringSet")) {
+    seq_char <- as.character(ctx)
+    seq_dna <- ctx
+  } else {
+    seq_char <- as.character(ctx)
+    seq_dna <- Biostrings::DNAStringSet(ctx)
+  }
+
+  k = unique((nchar(seq_char) - 1)/2)
   stopifnot(length(k)==1)
+  
 
-  muts_ctx = ctx
-
-  seq = Biostrings::DNAStringSet(muts_ctx)
   # important to do reverse complementary
   # could add a method to mantain strand
   cp = k + 1
-
-  central_pos = stringr::str_sub(as.character(seq),start = cp,end= cp)
+  central_pos <- stringr::str_sub(seq_char, start = cp, end = cp)
 
   # first we add the ones in the positive set
   simplify_pattern = glue::glue("[{paste0(simplify_set,collapse='')}]")
@@ -345,21 +350,17 @@ simplify_ctx <- function(ctx,simplify_set = c("C","A")) {
 
   # then we add the complementary
   complementary_set = as.character(
-    Biostrings::reverseComplement(
-      Biostrings::DNAStringSet(
-        simplify_set
-      )))
-  complementary_pattern = glue::glue("[{paste0(complementary_set,collapse='')}]")
+     Biostrings::reverseComplement(Biostrings::DNAStringSet(simplify_set))
+)
+  complementary_pattern = glue::glue("[{paste0(complementary_set, collapse='')}]")
   complement_mask = grepl(pattern = complementary_pattern,
                           x = central_pos)
 
   reverse_mask = !simplify_mask
-  seq[reverse_mask] = Biostrings::reverseComplement(seq[reverse_mask])
+  seq_dna[reverse_mask] <- Biostrings::reverseComplement(seq_dna[reverse_mask])
 
 
-  seq = as.character(seq)
-
-  res = seq
+  res <- as.character(seq_dna)
 
   # apply the NA mask
   if(any(!simplify_mask != complement_mask)){
